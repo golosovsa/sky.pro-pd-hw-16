@@ -1,0 +1,15 @@
+# .idea files
+.idea/*
+
+# venv files
+venv/*
+
+# pytest cache files
+.pytest_cache/*
+
+# python cache files
+__pycache__/*
+**/__pycache__/*
+
+# development environments files
+.env
