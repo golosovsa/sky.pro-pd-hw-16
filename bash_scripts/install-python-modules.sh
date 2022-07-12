@@ -7,7 +7,7 @@ python3 -m venv venv
 source venv/bin/activate
 
 # 2. install python requirement modules
-python3 -m pip install --upgrade pip psycopg2-binary flask sqlalchemy flask-sqlalchemy python-dotenv
+venv/bin/python3 -m pip install --upgrade pip psycopg2-binary flask sqlalchemy flask-sqlalchemy python-dotenv
 
 # 3. rewrite requirements.txt
-python3 -m pip freeze > requirements.txt
+venv/bin/python3 -m pip freeze > requirements.txt

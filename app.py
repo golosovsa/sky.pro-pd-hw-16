@@ -6,15 +6,17 @@
     v.1.0
 """
 
-
 # global imports
-from flask import Flask, jsonify
-import os
+from flask import Flask
 import dotenv
-from sqlalchemy import create_engine
+import os
 
 
-def create_app():
+# local imports
+from main.models import db
+
+
+def create_app() -> Flask:
     """ Create app function """
 
     the_app = Flask(__name__)
@@ -25,31 +27,16 @@ def create_app():
         "SQLALCHEMY_DATABASE_URI": f"postgresql+psycopg2://"
                                    f"{os.getenv('DB_USER')}:"
                                    f"{os.getenv('DB_PASSWORD')}@"
-                                   f"{os.getenv('DB_HOST')}/"
+                                   f"{os.getenv('DB_HOST')}:"
+                                   f"{os.getenv('DB_PORT')}/"
                                    f"{os.getenv('DB_NAME')}",
+        "SQLALCHEMY_TRACK_MODIFICATIONS": False,
     })
-
-    test_connection = create_engine(the_app.config["SQLALCHEMY_DATABASE_URI"])
-
-    test_connection.connect().execute("SELECT 1 + 1")
-
-    test_result = str(test_connection)
-
-    test_connection.dispose()
-
-    the_app.config["test_connection_result"] = test_result
 
     return the_app
 
 
-app = create_app()
-
-
-@app.route("/")
-def index():
-    return jsonify(
-        test_connection_result=app.config["test_connection_result"]), 200
-
-
 if __name__ == "__main__":
+    app = create_app()
+    db.init_app(app)
     app.run()

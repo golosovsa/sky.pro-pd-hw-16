@@ -1,0 +1,4 @@
+"""
+    offers blueprint
+    views
+"""
