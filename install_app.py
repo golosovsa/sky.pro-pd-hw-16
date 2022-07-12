@@ -3,6 +3,7 @@
 """
 
 # global imports
+import datetime
 from operator import itemgetter
 from flask import Flask
 from sqlalchemy.orm.session import Session
@@ -28,8 +29,8 @@ def create_tables():
 
     if os.getenv("DB_CREATED_ALL") is None:
 
-        with db.Session() as session:
-            session: Session = session
+        session: Session = db.session
+        with session.begin():
 
             try:
                 db.create_all()
@@ -72,35 +73,59 @@ def fill_tables():
         data_orders = sorted(data_orders, key=itemgetter("id"))
         data_offers = sorted(data_offers, key=itemgetter("id"))
 
-        with db.Session() as session:
-            session: Session = session
-
+        session: Session = db.session
+        with session.begin():
             try:
-
                 for user in data_users:
                     del user["id"]
                     session.add(User(**user))
-                    # session.flush()
-
-                for order in data_orders:
-                    del order["id"]
-                    session.add(Order(**order))
-                    # session.flush()
-
-                for offer in data_offers:
-                    del offer["id"]
-                    session.add(Offer(**offer))
-                    # session.flush()
-
-                session.commit()
+                    session.flush()
 
             except SQLAlchemyError as exception:
                 session.rollback()
                 print("Failed")
                 raise exception
-            else:
-                dotenv.set_key(".env", "DB_FILLED_ALL", "YES")
 
+            else:
+                session.commit()
+
+        with session.begin():
+            try:
+                for order in data_orders:
+                    del order["id"]
+                    order["customer_id"] += 1
+                    order["executor_id"] += 1
+                    order["start_date"] = datetime.datetime.strptime(order["start_date"], "%m/%d/%Y").date()
+                    order["end_date"] = datetime.datetime.strptime(order["end_date"], "%m/%d/%Y").date()
+                    session.add(Order(**order))
+                    session.flush()
+
+            except SQLAlchemyError as exception:
+                session.rollback()
+                print("Failed")
+                raise exception
+
+            else:
+                session.commit()
+
+        with session.begin():
+            try:
+                for offer in data_offers:
+                    del offer["id"]
+                    offer["order_id"] += 1
+                    offer["executor_id"] += 1
+                    session.add(Offer(**offer))
+                    session.flush()
+
+            except SQLAlchemyError as exception:
+                session.rollback()
+                print("Failed")
+                raise exception
+
+            else:
+                session.commit()
+
+    dotenv.set_key(".env", "DB_FILLED_ALL", "YES")
     print("Done")
 
 
