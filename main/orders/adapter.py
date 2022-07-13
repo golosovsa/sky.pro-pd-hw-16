@@ -5,13 +5,12 @@
 
 
 # global imports
-from sqlalchemy import func, or_, and_, desc
-from sqlalchemy.orm import Query, aliased, load_only
-
+from sqlalchemy import func, desc
+from sqlalchemy.orm import Query, aliased
 
 # local imports
 from grm import BaseAdapter, to_dict_from_alchemy_model as to_dict
-from main.models import db, User, Order, Offer
+from main.models import User, Order
 
 
 class AllOrdersAdapter(BaseAdapter):
@@ -93,7 +92,7 @@ class PKOrderListAdapter(BaseAdapter):
         if filter_by not in AllOrdersAdapter.filter_by_list:
             filter_by = AllOrdersAdapter.filter_by_list[0]
 
-        query: Query = User.query.with_entities(func.count(Order.id))
+        query: Query = Order.query.with_entities(func.count(Order.id))
 
         if filter_by == "default":
             pass
@@ -101,7 +100,5 @@ class PKOrderListAdapter(BaseAdapter):
             query: Query = query.filter(Order.customer_id == user_pk)
         elif filter_by == "executor" and type(user_pk) is int:
             query: Query = query.filter(Order.executor_id == user_pk)
-
-        print(query)
 
         self._data = {"count": query.scalar(), "pk": user_pk}

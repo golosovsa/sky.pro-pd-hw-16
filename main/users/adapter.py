@@ -4,13 +4,12 @@
 """
 
 # global imports
-from sqlalchemy import func, or_, and_, desc
-from sqlalchemy.orm import Query, aliased, load_only
-
+from sqlalchemy import func, desc
+from sqlalchemy.orm import Query, aliased
 
 # local imports
 from grm import BaseAdapter, to_dict_from_alchemy_model as to_dict
-from main.models import db, User, Order, Offer
+from main.models import User, Order, Offer
 
 
 class AllUsersAdapter(BaseAdapter):
