@@ -32,6 +32,7 @@ def create_app() -> Flask:
                                    f"{os.getenv('DB_PORT')}/"
                                    f"{os.getenv('DB_NAME')}",
         "SQLALCHEMY_TRACK_MODIFICATIONS": False,
+        "JSON_AS_ASCII": False,
     })
 
     the_app.register_blueprint(bp_main, url_prefix="/")

@@ -2,19 +2,23 @@
     users blueprint
     adapter
 """
-from sqlalchemy import func, or_, and_, desc
-from sqlalchemy.orm import Query, aliased
 
+# global imports
+from sqlalchemy import func, or_, and_, desc
+from sqlalchemy.orm import Query, aliased, load_only
+
+
+# local imports
 from grm import BaseAdapter, to_dict_from_alchemy_model as to_dict
 from main.models import db, User, Order, Offer
 
 
 class AllUsersAdapter(BaseAdapter):
 
-    _filter_by = ["default", "customer", "executor"]
-    _order_by = ["default", "age", "age_asc", "owner", "owner_asc", "executor", "executor_asc", "offers"]
+    filter_by_list = ["default", "customer", "executor"]
+    order_by_list = ["default", "age", "age_asc", "owner", "owner_asc", "executor", "executor_asc", "offers"]
 
-    def __init__(self, limit=5, offset=0, filter_by="all", order_by="default"):
+    def __init__(self, limit=5, offset=0, filter_by="default", order_by="default"):
 
         if limit < 1:
             limit = 5
@@ -22,11 +26,11 @@ class AllUsersAdapter(BaseAdapter):
         if offset < 0:
             offset = 0
 
-        if filter_by not in self._filter_by:
-            filter_by = self._filter_by[0]
+        if filter_by not in self.filter_by_list:
+            filter_by = self.filter_by_list[0]
 
-        if order_by not in self._order_by:
-            order_by = self._order_by[0]
+        if order_by not in self.order_by_list:
+            order_by = self.order_by_list[0]
 
         query: Query = User.query
 
@@ -42,7 +46,7 @@ class AllUsersAdapter(BaseAdapter):
             .join(orders_executor, orders_executor.executor_id == User.id, isouter=True) \
             .join(Offer, Offer.executor_id == User.id, isouter=True)
 
-        if filter_by == "all":
+        if filter_by == "default":
             pass
         elif filter_by == "customer":
             query: Query = query.filter(User.role == "customer")
@@ -72,8 +76,6 @@ class AllUsersAdapter(BaseAdapter):
 
         query: Query = query.limit(limit).offset(offset)
 
-        print(query)
-
         self._data = [
             {
                 **to_dict(row[0]),
@@ -94,3 +96,24 @@ class UserByPKAdapter(BaseAdapter):
             return
 
         self._data = to_dict(User.query.get(pk))
+
+
+class PKUserListAdapter(BaseAdapter):
+
+    def __init__(self, filter_by="default"):
+
+        if filter_by not in AllUsersAdapter.filter_by_list:
+            filter_by = AllUsersAdapter.filter_by_list[0]
+
+        query: Query = User.query
+        query = query.with_entities(func.count(User.id))
+
+        if filter_by == "default":
+            pass
+        elif filter_by == "customer":
+            query: Query = query.filter(User.role == "customer")
+        elif filter_by == "executor":
+            query: Query = query.filter(User.role == "executor")
+
+        # self._data = [row[0] for row in query.all()]
+        self._data = {"count": query.scalar()}

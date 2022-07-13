@@ -9,14 +9,14 @@ from flask import Blueprint, current_app, request
 
 
 # local imports
-from .adapter import AllUsersAdapter, UserByPKAdapter
+from .adapter import AllUsersAdapter, UserByPKAdapter, PKUserListAdapter
 
 
 bp_users = Blueprint("bp_users", __name__)
 
 
 @bp_users.route("/", methods=["GET"])
-def index_users_get_response():
+def index_all_users():
 
     limit = request.args.get("limit", 5, type=int)
     offset = request.args.get("offset", 0, type=int)
@@ -34,5 +34,16 @@ def index_user_by_pk(pk):
 
     with current_app.app_context():
         json_object = UserByPKAdapter(pk).jsonify()
+
+    return json_object, 200
+
+
+@bp_users.route("/count", methods=["GET"])
+def index_get_users_count():
+
+    filter_by = request.args.get("filter_by", "default", type=str)
+
+    with current_app.app_context():
+        json_object = PKUserListAdapter(filter_by).jsonify()
 
     return json_object, 200
