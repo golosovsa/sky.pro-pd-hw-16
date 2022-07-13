@@ -14,6 +14,7 @@ import os
 
 # local imports
 from main.models import db
+from main.views import bp_main
 
 
 def create_app() -> Flask:
@@ -33,10 +34,13 @@ def create_app() -> Flask:
         "SQLALCHEMY_TRACK_MODIFICATIONS": False,
     })
 
+    the_app.register_blueprint(bp_main, url_prefix="/")
+
     return the_app
 
 
 if __name__ == "__main__":
     app = create_app()
-    db.init_app(app)
+    with app.app_context():
+        db.init_app(app)
     app.run()
