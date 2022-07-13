@@ -60,3 +60,4 @@ Implement the creation of an offer using the `POST` method on the URL `/offers` 
 - [x] Created README.md
 - [x] Step 1 Done
 - [x] Step 2 Done
+- [x] Step 3 Done

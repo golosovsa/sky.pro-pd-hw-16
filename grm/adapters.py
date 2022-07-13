@@ -13,4 +13,4 @@ class BaseAdapter:
     _data = None
 
     def jsonify(self):
-        jsonify(self._data)
+        return jsonify(self._data)

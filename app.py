@@ -39,8 +39,9 @@ def create_app() -> Flask:
     return the_app
 
 
+app = create_app()
+with app.app_context():
+    db.init_app(app)
+
 if __name__ == "__main__":
-    app = create_app()
-    with app.app_context():
-        db.init_app(app)
     app.run()
