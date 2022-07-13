@@ -116,3 +116,13 @@ class PKUserListAdapter(BaseAdapter):
 
         # self._data = [row[0] for row in query.all()]
         self._data = {"count": query.scalar()}
+
+
+class AddUserAdapter(BaseAdapter):
+
+    def __init__(self, **kwargs):
+
+        user = User(**kwargs)
+        print(user.__repr__)
+
+        self._data = {"status": "?"}

@@ -50,3 +50,18 @@ def index_get_offers_count():
         json_object = PKOfferListAdapter(filter_by, user_pk, order_pk).jsonify()
 
     return json_object, 200
+
+
+@bp_offers.route("/", methods=["POST"])
+def index_add_new_odder():
+    pass
+
+
+@bp_offers.route("/<int:id>", methods=["PUT"])
+def index_update_odder_by_pk(pk):
+    pass
+
+
+@bp_offers.route("/<int:id>", methods=["DELETE"])
+def index_delete_odder_by_pk(pk):
+    pass

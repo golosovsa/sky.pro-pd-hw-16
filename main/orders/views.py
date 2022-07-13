@@ -48,3 +48,18 @@ def index_get_orders_count():
         json_object = PKOrderListAdapter(filter_by, user_pk).jsonify()
 
     return json_object, 200
+
+
+@bp_orders.route("/", methods=["POST"])
+def index_add_new_order():
+    pass
+
+
+@bp_orders.route("/<int:id>", methods=["PUT"])
+def index_update_order_by_pk(pk):
+    pass
+
+
+@bp_orders.route("/<int:id>", methods=["DELETE"])
+def index_delete_order_by_pk(pk):
+    pass
