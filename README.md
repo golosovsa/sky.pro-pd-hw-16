@@ -61,3 +61,6 @@ Implement the creation of an offer using the `POST` method on the URL `/offers` 
 - [x] Step 1 Done
 - [x] Step 2 Done
 - [x] Step 3 Done
+- [x] Step 4 Done
+- [x] Step 5 Done
+- [x] Step 6 Done
