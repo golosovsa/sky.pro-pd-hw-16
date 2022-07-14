@@ -4,16 +4,21 @@
 """
 
 # global imports
+from typing import Optional
+
 from sqlalchemy import func, desc
-from sqlalchemy.orm import Query, aliased
+from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy.orm import Query, aliased, Session
 
 # local imports
 from grm import BaseAdapter, to_dict_from_alchemy_model as to_dict
-from main.models import User, Order, Offer
+from main.models import db, User, Order, Offer
+from main.models_checkers import \
+    check_name, check_age, check_email, check_role, \
+    check_phone, check_pk
 
 
 class AllUsersAdapter(BaseAdapter):
-
     filter_by_list = ["default", "customer", "executor"]
     order_by_list = ["default", "age", "age_asc", "owner", "owner_asc", "executor", "executor_asc", "offers"]
 
@@ -40,7 +45,7 @@ class AllUsersAdapter(BaseAdapter):
             User,
             func.count(orders_owner.id),
             func.count(orders_executor.id),
-            func.count(Offer.id))\
+            func.count(Offer.id)) \
             .join(orders_owner, orders_owner.customer_id == User.id, isouter=True) \
             .join(orders_executor, orders_executor.executor_id == User.id, isouter=True) \
             .join(Offer, Offer.executor_id == User.id, isouter=True)
@@ -89,7 +94,6 @@ class AllUsersAdapter(BaseAdapter):
 class UserByPKAdapter(BaseAdapter):
 
     def __init__(self, pk):
-
         if pk < 1:
             self._data = None
             return
@@ -120,9 +124,182 @@ class PKUserListAdapter(BaseAdapter):
 
 class AddUserAdapter(BaseAdapter):
 
-    def __init__(self, **kwargs):
+    def __init__(self, json_object):
 
-        user = User(**kwargs)
-        print(user.__repr__)
+        first_name = json_object.get("first_name", None)
+        last_name = json_object.get("last_name", None)
+        age = json_object.get("age", None)
+        email = json_object.get("email", None)
+        role = json_object.get("role", None)
+        phone = json_object.get("phone", None)
 
-        self._data = {"status": "?"}
+        check_result = [result for result in [
+            check_name(first_name),
+            check_name(last_name),
+            check_age(age),
+            check_email(email),
+            check_role(role),
+            check_phone(phone)
+        ] if result is not None]
+
+        if len(check_result) != 0:
+            self._data = {
+                "status": "error",
+                "message": "\n".join(check_result)
+            }
+            return
+
+        session: Session = db.session
+        with session():
+
+            try:
+                session.add(
+                    User(
+                        first_name=json_object["first_name"],
+                        last_name=json_object["last_name"],
+                        age=json_object["age"],
+                        email=json_object["email"],
+                        role=json_object["role"],
+                        phone=json_object["phone"],
+                    )
+                )
+
+                session.commit()
+
+            except SQLAlchemyError as exception:
+                session.rollback()
+                self._data = {
+                    "status": "error",
+                    "message": str(exception)
+                }
+                return
+
+        self._data = {"status": "ok", "message": None}
+
+
+class UpdateUserAdapter(BaseAdapter):
+
+    def __init__(self, json_object, pk):
+
+        check_result = check_pk(pk)
+
+        if isinstance(check_result, str):
+            self._data = {
+                "status": "error",
+                "message": check_result
+            }
+            return
+
+        first_name = json_object.get("first_name", None)
+        last_name = json_object.get("last_name", None)
+        age = json_object.get("age", None)
+        email = json_object.get("email", None)
+        role = json_object.get("role", None)
+        phone = json_object.get("phone", None)
+
+        if not all([first_name, last_name, age, email, role, phone]):
+            self._data = {
+                "status": "error",
+                "message": "Missing data"
+            }
+            return
+
+        check_result = [result for result in [
+            check_name(first_name) if first_name else None,
+            check_name(last_name) if last_name else None,
+            check_age(age) if age else None,
+            check_email(email) if email else None,
+            check_role(role) if role else None,
+            check_phone(phone) if phone else None
+        ] if result is not None]
+
+        if len(check_result) != 0:
+            self._data = {
+                "status": "error",
+                "message": "\n".join(check_result)
+            }
+            return
+
+        try:
+            user = User.query.get(pk)
+
+        except SQLAlchemyError as exception:
+            self._data = {
+                "status": "error",
+                "message": str(exception)
+            }
+            return
+
+        if first_name:
+            user.first_name = first_name
+
+        if last_name:
+            user.last_name = last_name
+
+        if age:
+            user.age = age
+
+        if email:
+            user.email = email
+
+        if role:
+            user.role = role
+
+        if phone:
+            user.phone = phone
+
+        session: Session = db.session
+        with session():
+            try:
+                session.add(user)
+                session.commit()
+
+            except SQLAlchemyError as exception:
+                session.rollback()
+                self._data = {
+                    "status": "error",
+                    "message": str(exception)
+                }
+                return
+
+        self._data = {"status": "ok", "message": None}
+
+
+class DeleteUserAdapter(BaseAdapter):
+
+    def __init__(self, pk):
+
+        check_result = check_pk(pk)
+
+        if isinstance(check_result, str):
+            self._data = {
+                "status": "error",
+                "message": check_result
+            }
+            return
+
+        try:
+            user = User.query.get(pk)
+
+        except SQLAlchemyError as exception:
+            self._data = {
+                "status": "error",
+                "message": str(exception)
+            }
+            return
+
+        session: Session = db.session
+        with session():
+            try:
+                session.delete(user)
+                session.commit()
+
+            except SQLAlchemyError as exception:
+                session.rollback()
+                self._data = {
+                    "status": "error",
+                    "message": str(exception)
+                }
+                return
+
+        self._data = {"status": "ok", "message": None}

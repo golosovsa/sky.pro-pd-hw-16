@@ -25,9 +25,9 @@ def index_all_offers():
     order_pk = request.args.get("order_pk", None, type=int)
 
     with current_app.app_context():
-        json_data = AllOffersAdapter(limit, offset, filter_by, order_by, user_pk, order_pk).jsonify()
+        json_object = AllOffersAdapter(limit, offset, filter_by, order_by, user_pk, order_pk).jsonify()
 
-    return json_data, 200
+    return json_object, 200
 
 
 @bp_offers.route("/<int:pk>", methods=["GET"])

@@ -9,7 +9,13 @@ from flask import Blueprint, current_app, request
 
 
 # local imports
-from .adapter import AllUsersAdapter, UserByPKAdapter, PKUserListAdapter, AddUserAdapter
+from .adapter import \
+    AllUsersAdapter, \
+    UserByPKAdapter, \
+    PKUserListAdapter, \
+    AddUserAdapter, \
+    UpdateUserAdapter, \
+    DeleteUserAdapter
 
 
 bp_users = Blueprint("bp_users", __name__)
@@ -53,16 +59,24 @@ def index_get_users_count():
 def index_add_new_user():
 
     with current_app.app_context():
-        json_object = AddUserAdapter(**request.form).jsonify()
+        json_object = AddUserAdapter(request.json).jsonify()
 
     return json_object, 200
 
 
-@bp_users.route("/<int:id>", methods=["PUT"])
+@bp_users.route("/<int:pk>", methods=["PUT"])
 def index_update_user_by_pk(pk):
-    pass
+
+    with current_app.app_context():
+        json_object = UpdateUserAdapter(request.json, pk).jsonify()
+
+    return json_object, 200
 
 
-@bp_users.route("/<int:id>", methods=["DELETE"])
+@bp_users.route("/<int:pk>", methods=["DELETE"])
 def index_delete_user_by_pk(pk):
-    pass
+
+    with current_app.app_context():
+        json_object = DeleteUserAdapter(pk).jsonify()
+
+    return json_object, 200
