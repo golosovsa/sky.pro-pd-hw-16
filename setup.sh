@@ -15,5 +15,5 @@ sudo ./bash_scripts/install-postgresql.sh "$DB_USER" "$DB_PASSWORD" "$DB_NAME"
 # run install-python-modules.sh
 sudo ./bash_scripts/install-python-modules.sh
 
-# run install_app.py
+# run app_install.py
 sudo venv/bin/python3 -m install_app.py

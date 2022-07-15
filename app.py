@@ -15,6 +15,7 @@ import os
 # local imports
 from main.models import db
 from main.views import bp_main
+from app_custom_serialization import CustomJSONEncoder
 
 
 def create_app() -> Flask:
@@ -23,6 +24,8 @@ def create_app() -> Flask:
     the_app = Flask(__name__)
 
     dotenv.load_dotenv(override=True)
+
+    the_app.json_encoder = CustomJSONEncoder
 
     the_app.config.update({
         "SQLALCHEMY_DATABASE_URI": f"postgresql+psycopg2://"

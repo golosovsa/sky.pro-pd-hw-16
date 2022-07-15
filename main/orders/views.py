@@ -9,7 +9,13 @@ from flask import Blueprint, request, current_app
 
 
 # local imports
-from .adapter import AllOrdersAdapter, OrderByPKAdapter, PKOrderListAdapter
+from .adapter import \
+    AllOrdersAdapter, \
+    OrderByPKAdapter, \
+    PKOrderListAdapter, \
+    AddOrderAdapter, \
+    UpdateOrderAdapter, \
+    DeleteOrderAdapter
 
 bp_orders = Blueprint("bp_orders", __name__)
 
@@ -52,14 +58,26 @@ def index_get_orders_count():
 
 @bp_orders.route("/", methods=["POST"])
 def index_add_new_order():
-    pass
+
+    with current_app.app_context():
+        json_object = AddOrderAdapter(request.json).jsonify()
+
+    return json_object, 200
 
 
-@bp_orders.route("/<int:id>", methods=["PUT"])
+@bp_orders.route("/<int:pk>", methods=["PUT"])
 def index_update_order_by_pk(pk):
-    pass
+
+    with current_app.app_context():
+        json_object = UpdateOrderAdapter(request.json, pk).jsonify()
+
+    return json_object, 200
 
 
-@bp_orders.route("/<int:id>", methods=["DELETE"])
+@bp_orders.route("/<int:pk>", methods=["DELETE"])
 def index_delete_order_by_pk(pk):
-    pass
+
+    with current_app.app_context():
+        json_object = DeleteOrderAdapter(pk).jsonify()
+
+    return json_object, 200

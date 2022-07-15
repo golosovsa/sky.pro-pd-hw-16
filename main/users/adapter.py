@@ -197,7 +197,7 @@ class UpdateUserAdapter(BaseAdapter):
         role = json_object.get("role", None)
         phone = json_object.get("phone", None)
 
-        if not all([first_name, last_name, age, email, role, phone]):
+        if not any([first_name, last_name, age, email, role, phone]):
             self._data = {
                 "status": "error",
                 "message": "Missing data"
@@ -205,12 +205,12 @@ class UpdateUserAdapter(BaseAdapter):
             return
 
         check_result = [result for result in [
-            check_name(first_name) if first_name else None,
-            check_name(last_name) if last_name else None,
-            check_age(age) if age else None,
-            check_email(email) if email else None,
-            check_role(role) if role else None,
-            check_phone(phone) if phone else None
+            check_name(first_name) if first_name is not None else None,
+            check_name(last_name) if last_name is not None else None,
+            check_age(age) if age is not None else None,
+            check_email(email) if email is not None else None,
+            check_role(role) if role is not None else None,
+            check_phone(phone) if phone is not None else None
         ] if result is not None]
 
         if len(check_result) != 0:

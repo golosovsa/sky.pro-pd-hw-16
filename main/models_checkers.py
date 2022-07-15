@@ -6,6 +6,7 @@ from __future__ import annotations
 
 import operator
 import re
+from datetime import datetime
 from functools import reduce
 
 
@@ -136,4 +137,49 @@ def check_pk(pk: int) -> str | None:
     if pk is None or not isinstance(pk, int):
         return "There isn't pk or wrong type"
 
+
+def check_description(text: str) -> str | None:
+    """Check description """
+
+    if text is None or not isinstance(text, str):
+        return "There isn't description or wrong type"
+
+    text = text.split()
+
+    if len(text) <= 5:
+        return "Description must be more than 5 words"
+
+
+def check_date(the_date: datetime, other_date=None) -> str | None:
+
+    if the_date is None or not isinstance(the_date, datetime):
+        return "There isn't date or wrong type"
+
+    today = other_date or datetime.today()
+
+    if the_date < today:
+        return "You cannot create an order in the past"
+
+
+def check_address(address: str) -> str | None:
+
+    if address is None or not isinstance(address, str):
+        return "There isn't address or wrong type"
+
+    address = address.strip().split()
+
+    if len(address) < 4:
+        return "There is something wrong with your address"
+
+    if not address[0].isdigit():
+        return "The first element of the address can be your post office zip code"
+
+
+def check_price(price: int) -> str | None:
+
+    if price is None or not isinstance(price, int):
+        return "There isn't price or wrong type"
+
+    if price < 100:
+        return "Do it yourself for that kind of money"
 
