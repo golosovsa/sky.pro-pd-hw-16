@@ -53,7 +53,9 @@ Offers:
 - Implement deleting an order using the `DELETE` method at the URL `/orders/<id>` for orders.
 
 ### Step 8:
-Implement the creation of an offer using the `POST` method on the URL `/offers` for offers.
+- Implement the creation of an offer using the `POST` method on the URL `/offers` for offers.
+- Implement an offer update using the `PUT` method on the `/offers/<id>` URL for offers. Body will receive JSON with all fields to update the offer.
+- Implement deleting an offer using the `DELETE` method at the URL `/orders/<id>` for offers.
 
 # Project status:
 
@@ -64,3 +66,4 @@ Implement the creation of an offer using the `POST` method on the URL `/offers` 
 - [x] Step 4 Done
 - [x] Step 5 Done
 - [x] Step 6 Done
+- [x] Step 7 Done
