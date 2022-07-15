@@ -6,14 +6,15 @@
 
 # global imports
 from sqlalchemy import func, or_, and_, desc, text
-from sqlalchemy.orm import Query, aliased, load_only
-
+from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy.orm import Query, aliased, load_only, Session
 
 # local imports
 from sqlalchemy.sql import label
 
 from grm import BaseAdapter, to_dict_from_alchemy_model as to_dict
 from main.models import db, User, Order, Offer
+from main.models_checkers import check_pk
 
 
 class AllOffersAdapter(BaseAdapter):
@@ -134,3 +135,227 @@ class PKOfferListAdapter(BaseAdapter):
             "filter_by": filter_by
         }
 
+
+class AddOfferAdapter(BaseAdapter):
+
+    def __init__(self, json_object):
+
+        order_id = json_object.get("order_id", None)
+        executor_id = json_object.get("executor_id", None)
+
+        check_result = [result for result in [
+            check_pk(order_id),
+            check_pk(executor_id)
+        ] if result is not None]
+
+        if len(check_result) != 0:
+            self._data = {
+                "status": "error",
+                "message": "\n".join(check_result)
+            }
+            return
+
+        try:
+            order: Order = Order.query.get(order_id)
+        except SQLAlchemyError as exception:
+            self._data = {
+                "status": "error",
+                "message": "\n".join(["Order not found", str(exception)])
+            }
+            return
+
+        try:
+            executor: User = User.query.get(executor_id)
+        except SQLAlchemyError as exception:
+            self._data = {
+                "status": "error",
+                "message": "\n".join(["Executor not found", str(exception)])
+            }
+            return
+
+        if order.executor_id == executor.id:
+            self._data = {
+                "status": "error",
+                "message": "Executor already in the order"
+            }
+            return
+
+        if executor.role != "executor":
+            self._data = {
+                "status": "error",
+                "message": "You have chosen not the executor"
+            }
+            return
+
+        session: Session = db.session
+        with session():
+
+            try:
+                session.add(
+                    Offer(
+                        order_id=order_id,
+                        executor_id=executor_id
+                    )
+                )
+
+                session.commit()
+
+            except SQLAlchemyError as exception:
+                session.rollback()
+                self._data = {
+                    "status": "error",
+                    "message": str(exception)
+                }
+                return
+
+        self._data = {"status": "ok", "message": None}
+
+
+class UpdateOfferAdapter(BaseAdapter):
+
+    def __init__(self, json_object, pk):
+        check_result = check_pk(pk)
+
+        if isinstance(check_result, str):
+            self._data = {
+                "status": "error",
+                "message": check_result
+            }
+            return
+
+        try:
+            offer: Offer = Offer.query.get(pk)
+
+        except SQLAlchemyError as exception:
+            self._data = {
+                "status": "error",
+                "message": str(exception)
+            }
+            return
+
+        order_id = json_object.get("order_id", None)
+        executor_id = json_object.get("executor_id", None)
+
+        if not any([order_id, executor_id]):
+            self._data = {
+                "status": "error",
+                "message": "Missing data"
+            }
+            return
+
+        check_result = [result for result in [
+            check_pk(order_id) if order_id is not None else None,
+            check_pk(executor_id) if executor_id  is not None else None
+        ] if result is not None]
+
+        if len(check_result) != 0:
+            self._data = {
+                "status": "error",
+                "message": "\n".join(check_result)
+            }
+            return
+
+        if order_id:
+            try:
+                order: Order = Order.query.get(order_id)
+            except SQLAlchemyError as exception:
+                self._data = {
+                    "status": "error",
+                    "message": "\n".join(["Order not found", str(exception)])
+                }
+                return
+        else:
+            order = Order.query.get(offer.order_id)
+
+        if executor_id:
+            try:
+                executor: User = User.query.get(executor_id)
+                if executor is None:
+                    raise SQLAlchemyError()
+            except SQLAlchemyError as exception:
+                self._data = {
+                    "status": "error",
+                    "message": "Executor not found"
+                }
+                return
+        else:
+            executor: User = User.query.get(offer.executor_id)
+
+        if order_id or executor_id:
+            if order.executor_id == executor.id:
+                self._data = {
+                    "status": "error",
+                    "message": "Executor already in the order"
+                }
+                return
+
+        if order_id:
+            offer.order_id = order_id
+
+        if executor_id:
+            if executor.role != "executor":
+                self._data = {
+                    "status": "error",
+                    "message": "You have chosen not the executor"
+                }
+                return
+            offer.executor_id = executor_id
+
+        session: Session = db.session
+        with session():
+
+            try:
+                session.add(
+                    Offer(offer)
+                )
+                session.commit()
+
+            except SQLAlchemyError as exception:
+                session.rollback()
+                self._data = {
+                    "status": "error",
+                    "message": str(exception)
+                }
+                return
+
+        self._data = {"status": "ok", "message": None}
+
+
+class DeleteOfferAdapter(BaseAdapter):
+
+    def __init__(self, pk):
+
+        check_result = check_pk(pk)
+
+        if isinstance(check_result, str):
+            self._data = {
+                "status": "error",
+                "message": check_result
+            }
+            return
+
+        try:
+            offer: Offer = Offer.query.get(pk)
+
+        except SQLAlchemyError as exception:
+            self._data = {
+                "status": "error",
+                "message": str(exception)
+            }
+            return
+
+        session: Session = db.session
+        with session():
+            try:
+                session.delete(offer)
+                session.commit()
+
+            except SQLAlchemyError as exception:
+                session.rollback()
+                self._data = {
+                    "status": "error",
+                    "message": str(exception)
+                }
+                return
+
+        self._data = {"status": "ok", "message": None}

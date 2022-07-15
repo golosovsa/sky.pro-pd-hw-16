@@ -161,7 +161,7 @@ class AddOrderAdapter(BaseAdapter):
         except SQLAlchemyError as exception:
             self._data = {
                 "status": "error",
-                "message": "\n".join(["Customer not found", str(exception)])
+                "message": "\n".join(["Executor not found", str(exception)])
             }
             return
 

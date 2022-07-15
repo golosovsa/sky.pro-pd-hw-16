@@ -9,7 +9,13 @@ from flask import Blueprint, request, current_app
 
 
 # local imports
-from .adapter import AllOffersAdapter, OfferByPKAdapter, PKOfferListAdapter
+from .adapter import \
+    AllOffersAdapter, \
+    OfferByPKAdapter, \
+    PKOfferListAdapter, \
+    AddOfferAdapter, \
+    UpdateOfferAdapter, \
+    DeleteOfferAdapter
 
 bp_offers = Blueprint("bp_offers", __name__)
 
@@ -54,14 +60,26 @@ def index_get_offers_count():
 
 @bp_offers.route("/", methods=["POST"])
 def index_add_new_odder():
-    pass
+
+    with current_app.app_context():
+        json_object = AddOfferAdapter(request.json).jsonify()
+
+    return json_object, 200
 
 
-@bp_offers.route("/<int:id>", methods=["PUT"])
+@bp_offers.route("/<int:pk>", methods=["PUT"])
 def index_update_odder_by_pk(pk):
-    pass
+
+    with current_app.app_context():
+        json_object = UpdateOfferAdapter(request.json, pk).jsonify()
+
+    return json_object, 200
 
 
-@bp_offers.route("/<int:id>", methods=["DELETE"])
+@bp_offers.route("/<int:pk>", methods=["DELETE"])
 def index_delete_odder_by_pk(pk):
-    pass
+
+    with current_app.app_context():
+        json_object = DeleteOfferAdapter(pk).jsonify()
+
+    return json_object, 200
