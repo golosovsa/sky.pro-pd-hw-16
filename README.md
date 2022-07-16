@@ -67,3 +67,4 @@ Offers:
 - [x] Step 5 Done
 - [x] Step 6 Done
 - [x] Step 7 Done
+- [x] Step 8 Done

@@ -149,19 +149,23 @@ class AddOrderAdapter(BaseAdapter):
 
         try:
             customer: User = User.query.get(customer_id)
+            if customer is None:
+                raise SQLAlchemyError()
         except SQLAlchemyError as exception:
             self._data = {
                 "status": "error",
-                "message": "\n".join(["Customer not found", str(exception)])
+                "message": "Customer not found"
             }
             return
 
         try:
             executor: User = User.query.get(executor_id)
+            if executor is None:
+                raise SQLAlchemyError()
         except SQLAlchemyError as exception:
             self._data = {
                 "status": "error",
-                "message": "\n".join(["Executor not found", str(exception)])
+                "message": "Executor not found"
             }
             return
 
@@ -230,11 +234,12 @@ class UpdateOrderAdapter(BaseAdapter):
 
         try:
             order: Order = Order.query.get(pk)
-
+            if order is None:
+                raise SQLAlchemyError()
         except SQLAlchemyError as exception:
             self._data = {
                 "status": "error",
-                "message": str(exception)
+                "message": "Order not found"
             }
             return
 
@@ -284,10 +289,12 @@ class UpdateOrderAdapter(BaseAdapter):
         if customer_id:
             try:
                 customer: User = User.query.get(customer_id)
+                if customer is None:
+                    raise SQLAlchemyError()
             except SQLAlchemyError as exception:
                 self._data = {
                     "status": "error",
-                    "message": "\n".join(["Customer not found", str(exception)])
+                    "message": "Customer not found"
                 }
                 return
         else:
@@ -296,10 +303,12 @@ class UpdateOrderAdapter(BaseAdapter):
         if executor_id:
             try:
                 executor: User = User.query.get(executor_id)
+                if executor is None:
+                    raise SQLAlchemyError()
             except SQLAlchemyError as exception:
                 self._data = {
                     "status": "error",
-                    "message": "\n".join(["Customer not found", str(exception)])
+                    "message": "Customer not found"
                 }
                 return
         else:
@@ -364,7 +373,8 @@ class DeleteOrderAdapter(BaseAdapter):
 
         try:
             order = Order.query.get(pk)
-
+            if order is None:
+                raise SQLAlchemyError()
         except SQLAlchemyError as exception:
             self._data = {
                 "status": "error",

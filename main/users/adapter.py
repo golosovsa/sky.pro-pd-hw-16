@@ -222,11 +222,12 @@ class UpdateUserAdapter(BaseAdapter):
 
         try:
             user = User.query.get(pk)
-
+            if user is None:
+                raise SQLAlchemyError()
         except SQLAlchemyError as exception:
             self._data = {
                 "status": "error",
-                "message": str(exception)
+                "message": "User not found"
             }
             return
 
@@ -280,11 +281,12 @@ class DeleteUserAdapter(BaseAdapter):
 
         try:
             user = User.query.get(pk)
-
+            if user is None:
+                raise SQLAlchemyError()
         except SQLAlchemyError as exception:
             self._data = {
                 "status": "error",
-                "message": str(exception)
+                "message": "User not found"
             }
             return
 
